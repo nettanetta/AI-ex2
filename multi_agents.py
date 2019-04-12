@@ -3,6 +3,8 @@ import math
 import abc
 import util
 from game import Agent, Action
+from statistics import mean
+
 
 
 class ReflexAgent(Agent):
@@ -15,6 +17,7 @@ class ReflexAgent(Agent):
     headers.
     """
 
+
     def get_action(self, game_state):
         """
         You do not need to change this method, but you're welcome to.
@@ -26,41 +29,16 @@ class ReflexAgent(Agent):
 
         # Collect legal moves and successor states
         legal_moves = game_state.get_agent_legal_actions()
+
         # Choose one of the best actions
         scores = [self.evaluation_function(game_state, action) for action in legal_moves]
         best_score = max(scores)
         best_indices = [index for index in range(len(scores)) if scores[index] == best_score]
-        "Add more of your code here if you want to"
-        if Action.RIGHT in legal_moves:
-            if util.flipCoin(0.6):
-                return Action.RIGHT
-        if Action.DOWN in legal_moves:
-            return Action.DOWN
-        if Action.LEFT in legal_moves:
-            return Action.LEFT
-        return legal_moves[best_indices[0]]
+        chosen_index = np.random.choice(best_indices)  # Pick randomly among the best
 
-    # def get_action(self, game_state):
-    #     """
-    #     You do not need to change this method, but you're welcome to.
-    #
-    #     get_action chooses among the best options according to the evaluation function.
-    #
-    #     get_action takes a game_state and returns some Action.X for some X in the set {UP, DOWN, LEFT, RIGHT, STOP}
-    #     """
-    #
-    #     # Collect legal moves and successor states
-    #     legal_moves = game_state.get_agent_legal_actions()
-    #
-    #     # Choose one of the best actions
-    #     scores = [self.evaluation_function(game_state, action) for action in legal_moves]
-    #     best_score = max(scores)
-    #     best_indices = [index for index in range(len(scores)) if scores[index] == best_score]
-    #     chosen_index = np.random.choice(best_indices)  # Pick randomly among the best
-    #
-    #     "Add more of your code here if you want to"
-    #
-    #     return legal_moves[chosen_index]
+        "Add more of your code here if you want to"
+
+        return legal_moves[chosen_index]
 
     def evaluation_function(self, current_game_state, action):
         """
@@ -74,12 +52,7 @@ class ReflexAgent(Agent):
         # Useful information you can extract from a GameState (game_state.py)
 
         successor_game_state = current_game_state.generate_successor(action=action)
-        board = successor_game_state.board
-        max_tile = successor_game_state.max_tile
-        score = successor_game_state.score
-        action_score_dict = {Action.UP: 1, Action.DOWN: 2, Action.LEFT: 1, Action.RIGHT: 2}
-        "*** YOUR CODE HERE ***"
-        return score * max_tile * action_score_dict[action]
+        return better_evaluation_function(successor_game_state)
 
 
 def score_evaluation_function(current_game_state):
@@ -147,7 +120,7 @@ class MinmaxAgent(MultiAgentSearchAgent):
             actions_scores = np.array(
                 [self.get_action_helper(state.generate_successor(0, move), cur_depth + 1) for move in legal_moves])
             best_move_index = np.argmax(actions_scores)
-            print(max(actions_scores))
+            #print(max(actions_scores))
             return legal_moves[best_move_index]
         elif cur_depth % 2 == 0:
             if not legal_moves:
@@ -185,7 +158,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 alpha = max(alpha, cur_eval)
                 if beta <= alpha:
                     break
-            print(max_eval)
+            #print(max_eval)
             return best_move
         elif cur_depth % 2 == 0:
             max_eval = -math.inf
@@ -220,7 +193,27 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         """*** YOUR CODE HERE ***"""
-        util.raiseNotDefined()
+        return self.get_action_helper(game_state, 0)
+
+    def get_action_helper(self, state, cur_depth):
+        # TODO is it actually depth*2? or just depth?
+        if cur_depth == self.depth * 2:
+            return self.evaluation_function(state)
+        legal_moves = state.get_legal_actions(cur_depth % 2)
+        if cur_depth == 0:
+            actions_scores = np.array(
+                [self.get_action_helper(state.generate_successor(0, move), cur_depth + 1) for move in legal_moves])
+            best_move_index = np.argmax(actions_scores)
+            #print(max(actions_scores))
+            return legal_moves[best_move_index]
+        elif cur_depth % 2 == 0:
+            if not legal_moves:
+                # TODO what to do when we have no legal moves?
+                return self.evaluation_function(state)
+            return max(
+                [self.get_action_helper(state.generate_successor(0, move), cur_depth + 1) for move in legal_moves])
+        return mean([self.get_action_helper(state.generate_successor(1, move), cur_depth + 1) for move in legal_moves])
+
 
 
 def better_evaluation_function(current_game_state):
@@ -229,9 +222,30 @@ def better_evaluation_function(current_game_state):
 
     DESCRIPTION: <write something here so we know what you did>
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return snake_heuristic(current_game_state) + empty_tiles_heuristic(current_game_state) + max_tile_in_corner(current_game_state) * 3
 
+def snake_heuristic(state):
+    snake_matrix = np.arange(state._num_of_rows * state._num_of_columns * 10, step = 10).reshape(state._num_of_rows, state._num_of_columns)
+    for i in range(0, state._num_of_rows, 2):
+        snake_matrix[i] = np.flip(snake_matrix[i], axis = 0)
+    return np.sum(np.multiply(state.board, snake_matrix))
+
+def gradient_heuristic(state):
+    matrix_range =  np.arange(state._num_of_rows * state._num_of_columns).reshape(state._num_of_rows, state._num_of_columns) + 1
+    heatistic_matrix = np.multiply(matrix_range, matrix_range.transpose()) * 100
+    return np.sum(np.multiply(heatistic_matrix, state.board))
+
+def netta_heuristic(state):
+    matrix_range = np.minimum(np.indices((state._num_of_rows, state._num_of_columns))[0],np.indices((state._num_of_rows, state._num_of_columns))[1]) * 100
+    return np.sum(np.multiply(matrix_range, state.board))
+
+def max_tile_in_corner(state):
+    if(np.max(state.board) == state.board[-1][-1]):
+        return np.max(state.board)
+    return 0
+
+def empty_tiles_heuristic(state):
+    return np.count_nonzero(state.board == 0) * np.max(state.board)
 
 # Abbreviation
 better = better_evaluation_function
