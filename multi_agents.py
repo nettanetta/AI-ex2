@@ -213,14 +213,32 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         return mean([self.get_action_helper(state.generate_successor(1, move), cur_depth + 1) for move in legal_moves])
 
 
+array = [1, 0, 1, 1,1]
+SNAKE = array[0]
+GRAD = array[1]
+EMPTY = array[2]
+MAX = array[3]
+MERGE = array[4]
+
 def better_evaluation_function(current_game_state):
     """
     Your extreme 2048 evaluation function (question 5).
 
     DESCRIPTION: <write something here so we know what you did>
     """
-    return snake_heuristic(current_game_state) * 5 + empty_tiles_heuristic(current_game_state) + max_tile_in_corner\
-        (current_game_state) * 6 + merge_tiles_heuristic(current_game_state)
+    return snake_heuristic(current_game_state) * SNAKE + gradient_heuristic(
+        current_game_state) * GRAD + empty_tiles_heuristic(current_game_state) * EMPTY + max_tile_in_corner(
+        current_game_state) * MAX
+
+
+# def better_evaluation_function(current_game_state):
+#     """
+#     Your extreme 2048 evaluation function (question 5).
+#
+#     DESCRIPTION: <write something here so we know what you did>
+#     """
+#     return snake_heuristic(current_game_state) * 5 + empty_tiles_heuristic(current_game_state) + max_tile_in_corner\
+#         (current_game_state) * 6 + merge_tiles_heuristic(current_game_state)
 
 
 def snake_heuristic(state):
