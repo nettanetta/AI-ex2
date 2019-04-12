@@ -6,7 +6,6 @@ from game import Agent, Action
 from statistics import mean
 
 
-
 class ReflexAgent(Agent):
     """
     A reflex agent chooses an action at each choice point by examining
@@ -16,7 +15,6 @@ class ReflexAgent(Agent):
     it in any way you see fit, so long as you don't touch our method
     headers.
     """
-
 
     def get_action(self, game_state):
         """
@@ -120,7 +118,7 @@ class MinmaxAgent(MultiAgentSearchAgent):
             actions_scores = np.array(
                 [self.get_action_helper(state.generate_successor(0, move), cur_depth + 1) for move in legal_moves])
             best_move_index = np.argmax(actions_scores)
-            #print(max(actions_scores))
+            # print(max(actions_scores))
             return legal_moves[best_move_index]
         elif cur_depth % 2 == 0:
             if not legal_moves:
@@ -158,7 +156,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 alpha = max(alpha, cur_eval)
                 if beta <= alpha:
                     break
-            #print(max_eval)
+            # print(max_eval)
             return best_move
         elif cur_depth % 2 == 0:
             max_eval = -math.inf
@@ -204,7 +202,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             actions_scores = np.array(
                 [self.get_action_helper(state.generate_successor(0, move), cur_depth + 1) for move in legal_moves])
             best_move_index = np.argmax(actions_scores)
-            #print(max(actions_scores))
+            # print(max(actions_scores))
             return legal_moves[best_move_index]
         elif cur_depth % 2 == 0:
             if not legal_moves:
@@ -215,37 +213,46 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         return mean([self.get_action_helper(state.generate_successor(1, move), cur_depth + 1) for move in legal_moves])
 
 
-
 def better_evaluation_function(current_game_state):
     """
     Your extreme 2048 evaluation function (question 5).
 
     DESCRIPTION: <write something here so we know what you did>
     """
-    return snake_heuristic(current_game_state) + empty_tiles_heuristic(current_game_state) + max_tile_in_corner(current_game_state) * 3
+    return snake_heuristic(current_game_state) + empty_tiles_heuristic(current_game_state) + max_tile_in_corner(
+        current_game_state) * 3
+
 
 def snake_heuristic(state):
-    snake_matrix = np.arange(state._num_of_rows * state._num_of_columns * 10, step = 10).reshape(state._num_of_rows, state._num_of_columns)
+    snake_matrix = np.arange(state._num_of_rows * state._num_of_columns * 10, step=10).reshape(state._num_of_rows,
+                                                                                               state._num_of_columns)
     for i in range(0, state._num_of_rows, 2):
-        snake_matrix[i] = np.flip(snake_matrix[i], axis = 0)
+        snake_matrix[i] = np.flip(snake_matrix[i], axis=0)
     return np.sum(np.multiply(state.board, snake_matrix))
 
+
 def gradient_heuristic(state):
-    matrix_range =  np.arange(state._num_of_rows * state._num_of_columns).reshape(state._num_of_rows, state._num_of_columns) + 1
+    matrix_range = np.arange(state._num_of_rows * state._num_of_columns).reshape(state._num_of_rows,
+                                                                                 state._num_of_columns) + 1
     heatistic_matrix = np.multiply(matrix_range, matrix_range.transpose()) * 100
     return np.sum(np.multiply(heatistic_matrix, state.board))
 
+
 def netta_heuristic(state):
-    matrix_range = np.minimum(np.indices((state._num_of_rows, state._num_of_columns))[0],np.indices((state._num_of_rows, state._num_of_columns))[1]) * 100
+    matrix_range = np.minimum(np.indices((state._num_of_rows, state._num_of_columns))[0],
+                              np.indices((state._num_of_rows, state._num_of_columns))[1]) * 100
     return np.sum(np.multiply(matrix_range, state.board))
 
+
 def max_tile_in_corner(state):
-    if(np.max(state.board) == state.board[-1][-1]):
-        return np.max(state.board)
+    if state.max_tile() == state.board[-1][-1]:
+        return state.max_tile()
     return 0
 
+
 def empty_tiles_heuristic(state):
-    return np.count_nonzero(state.board == 0) * np.max(state.board)
+    return np.count_nonzero(state.board == 0) * state.max_tile()
+
 
 # Abbreviation
 better = better_evaluation_function
