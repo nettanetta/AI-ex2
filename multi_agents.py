@@ -219,8 +219,8 @@ def better_evaluation_function(current_game_state):
 
     DESCRIPTION: <write something here so we know what you did>
     """
-    return snake_heuristic(current_game_state) + empty_tiles_heuristic(current_game_state) + max_tile_in_corner(
-        current_game_state) * 3
+    return snake_heuristic(current_game_state) * 5 + empty_tiles_heuristic(current_game_state) + max_tile_in_corner\
+        (current_game_state) * 6 + merge_tiles_heuristic(current_game_state)
 
 
 def snake_heuristic(state):
@@ -245,13 +245,33 @@ def netta_heuristic(state):
 
 
 def max_tile_in_corner(state):
-    if state.max_tile() == state.board[-1][-1]:
-        return state.max_tile()
+    if state.max_tile == state.board[-1][-1]:
+        return state.max_tile
     return 0
 
 
 def empty_tiles_heuristic(state):
-    return np.count_nonzero(state.board == 0) * state.max_tile()
+    return np.count_nonzero(state.board == 0) * state.max_tile
+
+
+def merge_tiles_heuristic(state):
+    count_empty_tiles = np.count_nonzero(state.board == 0)
+    base_matrix = state.board
+    up_matrix = np.zeros_like(base_matrix)
+    down_matrix = np.zeros_like(base_matrix)
+    right_matrix = np.zeros_like(base_matrix)
+    left_matrix = np.zeros_like(base_matrix)
+
+    down_matrix[0:state._num_of_rows - 1] = base_matrix[1:state._num_of_rows]
+    up_matrix[1:state._num_of_rows] = base_matrix[0:state._num_of_rows - 1]
+    right_matrix[:, 1:state._num_of_columns] = base_matrix[:, 0:state._num_of_columns - 1]
+    left_matrix[:, 0:state._num_of_columns - 1] = base_matrix[:, 1:state._num_of_columns]
+
+    return state.max_tile * (np.count_nonzero(base_matrix - up_matrix == 0) +
+                                np.count_nonzero(base_matrix - right_matrix == 0) +
+                                 np.count_nonzero(base_matrix - right_matrix == 0) +
+                                  np.count_nonzero(base_matrix - right_matrix == 0) - 4 * count_empty_tiles)
+
 
 
 # Abbreviation
