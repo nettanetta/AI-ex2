@@ -110,7 +110,6 @@ class MinmaxAgent(MultiAgentSearchAgent):
         return self.get_action_helper(game_state, 0)
 
     def get_action_helper(self, state, cur_depth):
-        # TODO is it actually depth*2? or just depth?
         if cur_depth == self.depth * 2:
             return self.evaluation_function(state)
         legal_moves = state.get_legal_actions(cur_depth % 2)
@@ -118,11 +117,9 @@ class MinmaxAgent(MultiAgentSearchAgent):
             actions_scores = np.array(
                 [self.get_action_helper(state.generate_successor(0, move), cur_depth + 1) for move in legal_moves])
             best_move_index = np.argmax(actions_scores)
-            # print(max(actions_scores))
             return legal_moves[best_move_index]
         elif cur_depth % 2 == 0:
             if not legal_moves:
-                # TODO what to do when we have no legal moves?
                 return self.evaluation_function(state)
             return max(
                 [self.get_action_helper(state.generate_successor(0, move), cur_depth + 1) for move in legal_moves])
@@ -156,7 +153,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 alpha = max(alpha, cur_eval)
                 if beta <= alpha:
                     break
-            # print(max_eval)
             return best_move
         elif cur_depth % 2 == 0:
             max_eval = -math.inf
@@ -194,7 +190,6 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         return self.get_action_helper(game_state, 0)
 
     def get_action_helper(self, state, cur_depth):
-        # TODO is it actually depth*2? or just depth?
         if cur_depth == self.depth * 2:
             return self.evaluation_function(state)
         legal_moves = state.get_legal_actions(cur_depth % 2)
@@ -202,11 +197,9 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             actions_scores = np.array(
                 [self.get_action_helper(state.generate_successor(0, move), cur_depth + 1) for move in legal_moves])
             best_move_index = np.argmax(actions_scores)
-            # print(max(actions_scores))
             return legal_moves[best_move_index]
         elif cur_depth % 2 == 0:
             if not legal_moves:
-                # TODO what to do when we have no legal moves?
                 return self.evaluation_function(state)
             return max(
                 [self.get_action_helper(state.generate_successor(0, move), cur_depth + 1) for move in legal_moves])
@@ -229,16 +222,6 @@ def better_evaluation_function(current_game_state):
     return snake_heuristic(current_game_state) * SNAKE + gradient_heuristic(
         current_game_state) * GRAD + empty_tiles_heuristic(current_game_state) * EMPTY + max_tile_in_corner(
         current_game_state) * MAX
-
-
-# def better_evaluation_function(current_game_state):
-#     """
-#     Your extreme 2048 evaluation function (question 5).
-#
-#     DESCRIPTION: <write something here so we know what you did>
-#     """
-#     return snake_heuristic(current_game_state) * 5 + empty_tiles_heuristic(current_game_state) + max_tile_in_corner\
-#         (current_game_state) * 6 + merge_tiles_heuristic(current_game_state)
 
 
 def snake_heuristic(state):
