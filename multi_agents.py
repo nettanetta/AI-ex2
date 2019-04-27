@@ -207,7 +207,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         return mean([self.get_action_helper(state.generate_successor(1, move), cur_depth + 1) for move in legal_moves])
 
 
-array = [4, 1, 1, 0.2]
+array = [4, 1, 0, 0.2]
 SNAKE = array[0]
 EMPTY = array[1]
 MAX = array[2]
