@@ -206,12 +206,12 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         return mean([self.get_action_helper(state.generate_successor(1, move), cur_depth + 1) for move in legal_moves])
 
 
-array = [1, 0, 1, 1,1]
+array = [4, 1, 1, 0.2]
 SNAKE = array[0]
-GRAD = array[1]
-EMPTY = array[2]
-MAX = array[3]
-MERGE = array[4]
+EMPTY = array[1]
+MAX = array[2]
+MERGE = array[3]
+
 
 def better_evaluation_function(current_game_state):
     """
@@ -219,35 +219,36 @@ def better_evaluation_function(current_game_state):
 
     DESCRIPTION: <write something here so we know what you did>
     """
-    return snake_heuristic(current_game_state) * SNAKE + gradient_heuristic(
-        current_game_state) * GRAD + empty_tiles_heuristic(current_game_state) * EMPTY + max_tile_in_corner(
-        current_game_state) * MAX
+    return snake_heuristic(current_game_state) * SNAKE + empty_tiles_heuristic(current_game_state) * EMPTY +\
+           max_tile_in_corner(current_game_state) * MAX + merge_tiles_heuristic(current_game_state) * MERGE
+
+
+snake_matrix_a = np.array([[4,3,2,1],
+                        [7,10,13,16],
+                        [36,31,26,21],
+                        [60,80,140,200]])
+snake_matrix_b = np.array([[1,2,3,4],
+                        [16,13,10,7],
+                        [21,26,31,36],
+                        [200,140,80,60]])
+snake_matrix_c = np.array([[60,80,140,200],
+                        [36,31,26,21],
+                        [7,10,13,16],
+                        [4,3,2,1]])
+snake_matrix_d = np.array([[200,140,80,60],
+                        [21,26,31,36],
+                        [16,13,10,7],
+                        [1,2,3,4]])
+snake_matrixs = [snake_matrix_a, snake_matrix_b,snake_matrix_c, snake_matrix_d]
 
 
 def snake_heuristic(state):
-    snake_matrix = np.arange(state._num_of_rows * state._num_of_columns * 10, step=10).reshape(state._num_of_rows,
-                                                                                               state._num_of_columns)
-    for i in range(0, state._num_of_rows, 2):
-        snake_matrix[i] = np.flip(snake_matrix[i], axis=0)
-    return np.sum(np.multiply(state.board, snake_matrix))
-
-
-def gradient_heuristic(state):
-    matrix_range = np.arange(state._num_of_rows * state._num_of_columns).reshape(state._num_of_rows,
-                                                                                 state._num_of_columns) + 1
-    heatistic_matrix = np.multiply(matrix_range, matrix_range.transpose()) * 100
-    return np.sum(np.multiply(heatistic_matrix, state.board))
-
-
-def netta_heuristic(state):
-    matrix_range = np.minimum(np.indices((state._num_of_rows, state._num_of_columns))[0],
-                              np.indices((state._num_of_rows, state._num_of_columns))[1]) * 100
-    return np.sum(np.multiply(matrix_range, state.board))
+    return max([np.sum(np.multiply(state.board, snake_matrix)) for snake_matrix in snake_matrixs])
 
 
 def max_tile_in_corner(state):
     if state.max_tile == state.board[-1][-1]:
-        return state.max_tile
+        return state.max_tile * state.max_tile
     return 0
 
 
