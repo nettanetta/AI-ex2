@@ -138,7 +138,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         return self.get_action_helper(game_state, 0, -math.inf, math.inf)
 
     def get_action_helper(self, state, cur_depth, alpha, beta):
-        # TODO we don't always get the expected results, because the other player plays first
         legal_moves = state.get_legal_actions(cur_depth % 2)
         if cur_depth == self.depth * 2 or not legal_moves:
             return self.evaluation_function(state)
@@ -203,6 +202,8 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                 return self.evaluation_function(state)
             return max(
                 [self.get_action_helper(state.generate_successor(0, move), cur_depth + 1) for move in legal_moves])
+        if not legal_moves:
+            return self.evaluation_function(state)
         return mean([self.get_action_helper(state.generate_successor(1, move), cur_depth + 1) for move in legal_moves])
 
 
