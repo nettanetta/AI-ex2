@@ -248,7 +248,7 @@ def snake_heuristic(state):
 
 
 def max_tile_in_corner(state):
-    if state.max_tile == state.board[-1][-1]:
+    if state.max_tile in [state.board[-1][-1], state.board[-1][0], state.board[0][-1], state.board[0][0]]:
         return state.max_tile * state.max_tile
     return 0
 
